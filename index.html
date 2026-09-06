@@ -791,40 +791,55 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js";
 
 const firebaseConfig = {
-  apiKey: "ISI_API_KEY_KAMU",
+  apiKey: "AIzaSyAd7MbDGCiwMYfFeGBItlQd1JqFoWfH9KA",
   authDomain: "rekap-dapur-pesantren.firebaseapp.com",
   projectId: "rekap-dapur-pesantren",
-  storageBucket: "rekap-dapur-pesantren.appspot.com",
+  storageBucket: "rekap-dapur-pesantren.firebasestorage.app",
   messagingSenderId: "274739603368",
-  appId: "ISI_APP_ID_KAMU"
+  appId: "1:274739603368:web:5241a3567eb3b9ad4e9f9d"
 };
 
 const app = initializeApp(firebaseConfig);
 const messaging = getMessaging(app);
 
-// minta izin notif
 async function requestPermission() {
-  const permission = await Notification.requestPermission();
+  try {
+    const permission = await Notification.requestPermission();
 
-  if (permission === "granted") {
-    const token = await getToken(messaging, {
-      vapidKey: "ISI_VAPID_KEY_KAMU"
-    });
-
-    console.log("TOKEN HP:", token);
-  } else {
-    console.log("Izin notifikasi ditolak");
+    if (permission === "granted") {
+      const token = await getToken(messaging, {
+        vapidKey: "BPCRz4AyO0fYHSvnIr4qWCuh43PThvNk_45VI3yxRjedLlJ0x-wNbeg-hX2GpG1DeDfdVpfaPR3L6-BPT4mcbwQ"
+      });
+      console.log("TOKEN HP:", token);
+      // TODO: kirim token ini ke Firestore/collection tersendiri
+      // supaya nanti bisa dipakai backend untuk kirim push notification
+    } else {
+      console.log("Izin notifikasi ditolak");
+    }
+  } catch (err) {
+    console.error("Gagal ambil token FCM:", err);
   }
 }
 
-requestPermission();
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/firebase-messaging-sw.js")
+    .then((registration) => {
+      console.log("Service Worker berhasil:", registration);
+      requestPermission();
+    })
+    .catch((error) => {
+      console.log("Service Worker gagal:", error);
+    });
+} else {
+  console.log("Browser ini tidak mendukung Service Worker");
+}
 
-// notif saat web dibuka
 onMessage(messaging, (payload) => {
   new Notification(payload.notification.title, {
     body: payload.notification.body
   });
 });
+</script>
 
 // register service worker
 if ("serviceWorker" in navigator) {
