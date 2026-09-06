@@ -784,6 +784,39 @@ document.getElementById('btnPrint').addEventListener('click', function(){
   document.getElementById('printArea').innerHTML = html;
   window.print();
 });
+</script> <script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAd7MbDGCiwMYfFeGBItlQd1JqFoWfH9KA",
+  authDomain: "rekap-dapur-pesantren.firebaseapp.com",
+  projectId: "rekap-dapur-pesantren",
+  storageBucket: "rekap-dapur-pesantren.firebasestorage.app",
+  messagingSenderId: "274739603368",
+  appId: "1:274739603368:web:415a868d4416be514e9f9d"
+};
+
+const app = initializeApp(firebaseConfig);
+const messaging = getMessaging(app);
+
+// minta izin notif
+Notification.requestPermission().then(async (permission) => {
+  if (permission === "granted") {
+    const token = await getToken(messaging, {
+      vapidKey: "BPCRz4AyO0fYHSvnIr4qWCuh43PThvNk_45VI3yxRjedLlJ0x-wNbeg-hX2GpG1DeDfdVpfaPR3L6-BPT4mcbwQ"
+    });
+
+    console.log("TOKEN HP:", token);
+  }
+});
+
+// kalau notif masuk saat web dibuka
+onMessage(messaging, (payload) => {
+  new Notification(payload.notification.title, {
+    body: payload.notification.body
+  });
+});
 </script>
 </body>
 </html>
