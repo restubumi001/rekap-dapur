@@ -784,39 +784,58 @@ document.getElementById('btnPrint').addEventListener('click', function(){
   document.getElementById('printArea').innerHTML = html;
   window.print();
 });
-</script> <script type="module">
+
+</script> 
+<script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAd7MbDGCiwMYfFeGBItlQd1JqFoWfH9KA",
+  apiKey: "ISI_API_KEY_KAMU",
   authDomain: "rekap-dapur-pesantren.firebaseapp.com",
   projectId: "rekap-dapur-pesantren",
-  storageBucket: "rekap-dapur-pesantren.firebasestorage.app",
+  storageBucket: "rekap-dapur-pesantren.appspot.com",
   messagingSenderId: "274739603368",
-  appId: "1:274739603368:web:415a868d4416be514e9f9d"
+  appId: "ISI_APP_ID_KAMU"
 };
 
 const app = initializeApp(firebaseConfig);
 const messaging = getMessaging(app);
 
 // minta izin notif
-Notification.requestPermission().then(async (permission) => {
+async function requestPermission() {
+  const permission = await Notification.requestPermission();
+
   if (permission === "granted") {
     const token = await getToken(messaging, {
-      vapidKey: "BPCRz4AyO0fYHSvnIr4qWCuh43PThvNk_45VI3yxRjedLlJ0x-wNbeg-hX2GpG1DeDfdVpfaPR3L6-BPT4mcbwQ"
+      vapidKey: "ISI_VAPID_KEY_KAMU"
     });
 
     console.log("TOKEN HP:", token);
+  } else {
+    console.log("Izin notifikasi ditolak");
   }
-});
+}
 
-// kalau notif masuk saat web dibuka
+requestPermission();
+
+// notif saat web dibuka
 onMessage(messaging, (payload) => {
   new Notification(payload.notification.title, {
     body: payload.notification.body
   });
 });
+
+// register service worker
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/firebase-messaging-sw.js")
+    .then((registration) => {
+      console.log("Service Worker berhasil:", registration);
+    })
+    .catch((error) => {
+      console.log("Service Worker gagal:", error);
+    });
+}
 </script>
 </body>
 </html>
