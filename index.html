@@ -840,17 +840,5 @@ onMessage(messaging, (payload) => {
   });
 });
 </script>
-
-// register service worker
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("/firebase-messaging-sw.js")
-    .then((registration) => {
-      console.log("Service Worker berhasil:", registration);
-    })
-    .catch((error) => {
-      console.log("Service Worker gagal:", error);
-    });
-}
-</script>
 </body>
 </html>
