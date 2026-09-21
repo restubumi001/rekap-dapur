@@ -818,13 +818,14 @@ const firebaseConfigFCM = {
 const appFCM = initializeApp(firebaseConfigFCM);
 const messaging = getMessaging(appFCM);
 
-async function requestPermission() {
+async function requestPermission(registration) {
   try {
     const permission = await Notification.requestPermission();
 
     if (permission === "granted") {
       const token = await getToken(messaging, {
-        vapidKey: "BPCRz4AyO0fYHSvnIr4qWCuh43PThvNk_45VI3yxRjedLlJ0x-wNbeg-hX2GpG1DeDfdVpfaPR3L6-BPT4mcbwQ"
+        vapidKey: "BPCRz4AyO0fYHSvnIr4qWCuh43PThvNk_45VI3yxRjedLlJ0x-wNbeg-hX2GpG1DeDfdVpfaPR3L6-BPT4mcbwQ",
+        serviceWorkerRegistration:registration
       });
       console.log("TOKEN HP:", token);
       // Simpan token ke Firestore supaya Cloud Function bisa kirim notifikasi ke HP ini.
@@ -845,7 +846,7 @@ if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("./firebase-messaging-sw.js")
     .then((registration) => {
       console.log("Service Worker berhasil:", registration);
-      requestPermission();
+      requestPermission(registration);
     })
     .catch((error) => {
       console.log("Service Worker gagal:", error);
