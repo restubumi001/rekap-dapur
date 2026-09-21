@@ -1,6 +1,29 @@
 const admin = require("firebase-admin");
 
-const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+function extractJsonObject(raw) {
+  const start = raw.indexOf("{");
+  const end = raw.lastIndexOf("}");
+  if (start === -1 || end === -1 || end < start) {
+    throw new Error(
+      "Tidak ditemukan objek JSON ({ ... }) di dalam secret FIREBASE_SERVICE_ACCOUNT."
+    );
+  }
+  return raw.slice(start, end + 1);
+}
+
+let serviceAccount;
+try {
+  const raw = process.env.FIREBASE_SERVICE_ACCOUNT || "";
+  serviceAccount = JSON.parse(extractJsonObject(raw));
+} catch (err) {
+  const raw = process.env.FIREBASE_SERVICE_ACCOUNT || "";
+  console.error("Gagal membaca secret FIREBASE_SERVICE_ACCOUNT sebagai JSON.");
+  console.error("Panjang teks secret saat ini:", raw.length, "karakter.");
+  console.error(
+    "Kemungkinan ada karakter nyasar saat copy-paste. Coba update ulang secretnya."
+  );
+  throw err;
+}
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -57,6 +80,8 @@ async function main() {
   const stateRef = db.collection("meta").doc("notifyState");
   const stateSnap = await stateRef.get();
 
+  // Jalan pertama kali: jangan langsung kirim notif buat SEMUA laporan lama.
+  // Cukup catat waktu sekarang sebagai titik awal, baru mulai kirim dari laporan berikutnya.
   if (!stateSnap.exists) {
     await stateRef.set({ lastTs: Date.now() });
     console.log("Inisialisasi pertama kali. Belum ada notifikasi dikirim.");
