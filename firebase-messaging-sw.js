@@ -11,8 +11,35 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
-messaging.onBackgroundMessage(function(payload) {
-  self.registration.showNotification(payload.notification.title, {
-    body: payload.notification.body
-  });
+// Link default kalau server tidak mengirim link khusus
+const DEFAULT_URL = "https://restubumi001.github.io/rekap-dapur/";
+
+messaging.onBackgroundMessage(function (payload) {
+  const notificationTitle = payload.notification.title;
+  const notificationOptions = {
+    body: payload.notification.body,
+    data: {
+      url: (payload.fcmOptions && payload.fcmOptions.link) || DEFAULT_URL
+    }
+  };
+  self.registration.showNotification(notificationTitle, notificationOptions);
+});
+
+// Ini bagian yang tadinya hilang: apa yang terjadi pas notifikasi diketuk.
+self.addEventListener("notificationclick", function (event) {
+  event.notification.close();
+  const urlToOpen = (event.notification.data && event.notification.data.url) || DEFAULT_URL;
+
+  event.waitUntil(
+    clients.matchAll({ type: "window", includeUncontrolled: true }).then(function (clientList) {
+      for (const client of clientList) {
+        if (client.url === urlToOpen && "focus" in client) {
+          return client.focus();
+        }
+      }
+      if (clients.openWindow) {
+        return clients.openWindow(urlToOpen);
+      }
+    })
+  );
 });
